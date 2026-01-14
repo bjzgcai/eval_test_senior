@@ -73,6 +73,25 @@ npm install
 
 ## Quick Start
 
+### Running the Demo
+
+The easiest way to get started is to run the live demo:
+
+```bash
+npm start
+```
+
+This will start the Vite development server and automatically open your browser at **http://localhost:5173**
+
+The demo includes:
+- Live editor with all formatting features
+- Real-time character and word count
+- Interactive demo buttons
+- Keyboard shortcuts guide
+- Hot module reloading (changes update instantly)
+
+### Using in Your Code
+
 ```typescript
 import { Editor } from 'rich-text-editor';
 
@@ -89,8 +108,16 @@ editor.on('change', (data) => {
 
 // Apply formatting
 editor.bold();
-editor.setTextColor('#ff0000');
-editor.heading(1);
+editor.italic();
+editor.underline();
+editor.strikethrough();
+
+// Get content
+const html = editor.getContent();
+
+// Undo/Redo
+editor.undo();
+editor.redo();
 ```
 
 ## Development
@@ -99,17 +126,33 @@ editor.heading(1);
 # Install dependencies
 npm install
 
-# Build the project
+# Start development server with hot reload (for demo)
+npm run dev
+
+# Build library (compiles TypeScript to dist/)
 npm run build
+
+# Build production demo
+npm run preview
 
 # Run tests
 npm test
 
 # Run linter
 npm run lint
+```
 
-# Watch mode
-npm run dev
+### Development Workflow
+
+For the best development experience:
+
+1. Run `npm run dev` to start the Vite development server
+2. Edit files in `src/` and see changes instantly in the browser (hot reload)
+3. No manual refresh needed - Vite automatically updates the page
+
+To build the library for npm publishing:
+```bash
+npm run build:lib
 ```
 
 ## Architecture
