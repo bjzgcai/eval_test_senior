@@ -15,6 +15,8 @@ export class Toolbar {
   private editor: Editor;
   private toolbarElement: HTMLDivElement;
   private buttons: ToolbarButton[] = [
+    { command: 'undo', label: '↶', title: 'Undo (Ctrl+Z)' },
+    { command: 'redo', label: '↷', title: 'Redo (Ctrl+Y)' },
     { command: 'bold', label: 'B', title: 'Bold (Ctrl+B)' },
     { command: 'italic', label: 'I', title: 'Italic (Ctrl+I)' },
     { command: 'underline', label: 'U', title: 'Underline (Ctrl+U)' },
@@ -112,6 +114,12 @@ export class Toolbar {
    */
   private executeCommand(command: string): void {
     switch (command) {
+      case 'undo':
+        this.editor.undo();
+        break;
+      case 'redo':
+        this.editor.redo();
+        break;
       case 'bold':
         this.editor.bold();
         break;

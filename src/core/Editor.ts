@@ -7,6 +7,7 @@ import type { EditorConfig, EditorEventType } from './types';
 import { FormatManager } from '../modules/FormatManager';
 import { Toolbar } from '../modules/Toolbar';
 import { SelectionManager } from '../modules/SelectionManager';
+import { HistoryManager } from '../modules/HistoryManager';
 import { EventEmitter, EventHandler } from './EventEmitter';
 
 export class Editor {
@@ -17,6 +18,7 @@ export class Editor {
   private formatManager: FormatManager;
   private toolbar: Toolbar;
   private selectionManager: SelectionManager;
+  private historyManager: HistoryManager;
   private eventEmitter: EventEmitter;
 
   constructor(config: EditorConfig) {
@@ -44,6 +46,7 @@ export class Editor {
 
     // Initialize modules
     this.selectionManager = new SelectionManager(this.editorElement);
+    this.historyManager = new HistoryManager(this.editorElement);
     this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
     this.toolbar = new Toolbar(this);
 
@@ -158,6 +161,7 @@ export class Editor {
   private attachEventListeners(): void {
     // Content change events
     this.editorElement.addEventListener('input', () => {
+      this.historyManager.recordSnapshotDebounced();
       this.eventEmitter.emit('change', { content: this.getContent() });
     });
 
@@ -343,5 +347,40 @@ export class Editor {
    */
   public insertHTML(html: string): void {
     this.selectionManager.insertHTML(html);
+  }
+
+  /**
+   * Undo the last action
+   */
+  public undo(): boolean {
+    return this.historyManager.undo();
+  }
+
+  /**
+   * Redo the last undone action
+   */
+  public redo(): boolean {
+    return this.historyManager.redo();
+  }
+
+  /**
+   * Check if undo is available
+   */
+  public canUndo(): boolean {
+    return this.historyManager.canUndo();
+  }
+
+  /**
+   * Check if redo is available
+   */
+  public canRedo(): boolean {
+    return this.historyManager.canRedo();
+  }
+
+  /**
+   * Get the history manager
+   */
+  public getHistoryManager(): HistoryManager {
+    return this.historyManager;
   }
 }
