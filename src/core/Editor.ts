@@ -4,11 +4,13 @@
  */
 
 import type { EditorConfig } from './types';
+import { FormatManager } from '../modules/FormatManager';
 
 export class Editor {
   private container: HTMLElement;
   private editorElement: HTMLDivElement;
   private config: Required<EditorConfig>;
+  private formatManager: FormatManager;
 
   constructor(config: EditorConfig) {
     // Validate and resolve container
@@ -30,6 +32,9 @@ export class Editor {
     this.editorElement = this.createEditorElement();
     this.mount();
     this.initializeContent();
+
+    // Initialize modules
+    this.formatManager = new FormatManager(this.editorElement);
   }
 
   /**
@@ -135,5 +140,19 @@ export class Editor {
    */
   public destroy(): void {
     this.container.removeChild(this.editorElement);
+  }
+
+  /**
+   * Apply bold formatting to selected text
+   */
+  public bold(): void {
+    this.formatManager.toggleBold();
+  }
+
+  /**
+   * Check if bold formatting is active
+   */
+  public isBold(): boolean {
+    return this.formatManager.isBold();
   }
 }
