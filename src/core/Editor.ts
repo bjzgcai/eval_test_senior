@@ -209,4 +209,18 @@ export class Editor {
   public isUnderline(): boolean {
     return this.formatManager.isUnderline();
   }
+
+  /**
+   * Apply strikethrough formatting to selected text
+   */
+  public strikethrough(): void {
+    this.formatManager.toggleStrikethrough();
+  }
+
+  /**
+   * Check if strikethrough formatting is active
+   */
+  public isStrikethrough(): boolean {
+    return this.formatManager.isStrikethrough();
+  }
 }

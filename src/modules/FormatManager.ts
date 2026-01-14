@@ -92,4 +92,25 @@ export class FormatManager {
   public isUnderline(): boolean {
     return this.isFormatActive('underline');
   }
+
+  /**
+   * Apply strikethrough formatting to selected text
+   */
+  public strikethrough(): void {
+    this.executeCommand('strikeThrough');
+  }
+
+  /**
+   * Toggle strikethrough formatting
+   */
+  public toggleStrikethrough(): void {
+    this.strikethrough();
+  }
+
+  /**
+   * Check if strikethrough is active
+   */
+  public isStrikethrough(): boolean {
+    return this.isFormatActive('strikeThrough');
+  }
 }

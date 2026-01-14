@@ -18,6 +18,7 @@ export class Toolbar {
     { command: 'bold', label: 'B', title: 'Bold (Ctrl+B)' },
     { command: 'italic', label: 'I', title: 'Italic (Ctrl+I)' },
     { command: 'underline', label: 'U', title: 'Underline (Ctrl+U)' },
+    { command: 'strikethrough', label: 'S', title: 'Strikethrough' },
   ];
 
   constructor(editor: Editor) {
@@ -119,6 +120,9 @@ export class Toolbar {
         break;
       case 'underline':
         this.editor.underline();
+        break;
+      case 'strikethrough':
+        this.editor.strikethrough();
         break;
     }
   }

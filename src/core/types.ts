@@ -22,4 +22,4 @@ export interface EditorConfig {
 /**
  * Command types that can be executed
  */
-export type CommandType = 'bold' | 'italic' | 'underline';
+export type CommandType = 'bold' | 'italic' | 'underline' | 'strikeThrough';
