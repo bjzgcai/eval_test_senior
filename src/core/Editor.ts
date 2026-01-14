@@ -3,7 +3,7 @@
  * Handles the main editor initialization, DOM management, and content editing
  */
 
-import type { EditorConfig, EditorEventType } from './types';
+import type { EditorConfig, EditorEventType, ToolbarConfig, ToolbarPreset, ToolbarGroupConfig } from './types';
 import { FormatManager } from '../modules/FormatManager';
 import { Toolbar } from '../modules/Toolbar';
 import { SelectionManager } from '../modules/SelectionManager';
@@ -13,6 +13,7 @@ import { PluginManager } from './PluginManager';
 import { ConfigValidator } from './ConfigValidator';
 import { EventEmitter, EventHandler } from './EventEmitter';
 import type { Plugin } from './Plugin';
+import { getToolbarConfig } from '../config/toolbarPresets';
 
 export class Editor {
   private container: HTMLElement;
@@ -20,7 +21,7 @@ export class Editor {
   private editorElement: HTMLDivElement;
   private config: Required<EditorConfig>;
   private formatManager: FormatManager;
-  private toolbar: Toolbar;
+  private toolbar: Toolbar | null;
   private selectionManager: SelectionManager;
   private historyManager: HistoryManager;
   private keyboardManager: KeyboardManager;
@@ -45,6 +46,7 @@ export class Editor {
       content: sanitizedConfig.content || '',
       placeholder: sanitizedConfig.placeholder || 'Start typing...',
       readOnly: sanitizedConfig.readOnly || false,
+      toolbar: sanitizedConfig.toolbar !== undefined ? sanitizedConfig.toolbar : 'standard',
     };
 
     // Initialize event emitter
@@ -60,7 +62,14 @@ export class Editor {
     this.keyboardManager = new KeyboardManager(this, this.editorElement);
     this.pluginManager = new PluginManager(this);
     this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
-    this.toolbar = new Toolbar(this);
+
+    // Initialize toolbar with configuration
+    const toolbarGroups = this.resolveToolbarConfig(this.config.toolbar);
+    if (toolbarGroups) {
+      this.toolbar = new Toolbar(this, toolbarGroups);
+    } else {
+      this.toolbar = null;
+    }
 
     // Mount everything
     this.mount();
@@ -149,11 +158,28 @@ export class Editor {
   }
 
   /**
+   * Resolve toolbar configuration to groups
+   */
+  private resolveToolbarConfig(config: ToolbarConfig): ToolbarGroupConfig[] | null {
+    if (config === false) {
+      return null;
+    }
+
+    if (typeof config === 'string') {
+      return getToolbarConfig(config as ToolbarPreset);
+    }
+
+    return config; // Custom configuration array
+  }
+
+  /**
    * Mount the editor to the container
    */
   private mount(): void {
-    // Assemble the editor
-    this.wrapperElement.appendChild(this.toolbar.getElement());
+    // Assemble the editor - only mount toolbar if it exists
+    if (this.toolbar) {
+      this.wrapperElement.appendChild(this.toolbar.getElement());
+    }
     this.wrapperElement.appendChild(this.editorElement);
     this.container.appendChild(this.wrapperElement);
   }
@@ -238,6 +264,9 @@ export class Editor {
    */
   public destroy(): void {
     this.pluginManager.destroyAll();
+    if (this.toolbar) {
+      this.toolbar.destroy();
+    }
     this.eventEmitter.emit('destroyed');
     this.eventEmitter.removeAllListeners();
     this.container.removeChild(this.wrapperElement);
@@ -423,5 +452,70 @@ export class Editor {
    */
   public getPluginManager(): PluginManager {
     return this.pluginManager;
+  }
+
+  /**
+   * Get the format manager (for toolbar access)
+   */
+  public getFormatManager(): FormatManager {
+    return this.formatManager;
+  }
+
+  /**
+   * Create a link from selected text
+   * @param url The URL for the link
+   */
+  public createLink(url: string): void {
+    const selection = this.selectionManager.getSelectedText();
+    if (!selection) {
+      alert('Please select text to create a link');
+      return;
+    }
+
+    this.editorElement.focus();
+    document.execCommand('createLink', false, url);
+  }
+
+  /**
+   * Insert an image at cursor position
+   * @param url The image URL
+   */
+  public insertImage(url: string): void {
+    this.editorElement.focus();
+    this.selectionManager.insertHTML(`<img src="${url}" alt="Image" style="max-width: 100%;" />`);
+  }
+
+  /**
+   * Insert blockquote with selected text or placeholder
+   */
+  public insertBlockquote(): void {
+    this.editorElement.focus();
+    const selection = this.selectionManager.getSelectedText() || 'Quote';
+    this.selectionManager.insertHTML(
+      `<blockquote style="border-left: 3px solid #ccc; padding-left: 15px; margin: 10px 0; color: #666;">${selection}</blockquote>`
+    );
+  }
+
+  /**
+   * Insert inline code formatting
+   */
+  public insertInlineCode(): void {
+    const selection = this.selectionManager.getSelectedText();
+    if (selection) {
+      this.selectionManager.insertHTML(
+        `<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace;">${selection}</code>`
+      );
+    }
+  }
+
+  /**
+   * Insert code block
+   */
+  public insertCodeBlock(): void {
+    this.editorElement.focus();
+    const selection = this.selectionManager.getSelectedText() || 'Code here';
+    this.selectionManager.insertHTML(
+      `<pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>${selection}</code></pre>`
+    );
   }
 }

@@ -274,9 +274,22 @@
         <div class="demo-card">
             <div class="card-header">
                 <h2>Live Editor Demo</h2>
-                <p>Try out all the formatting features below</p>
+                <p>Try out all the formatting features with different toolbar presets</p>
             </div>
             <div class="card-body">
+                <div class="demo-section">
+                    <h3>Toolbar Presets</h3>
+                    <div class="button-group">
+                        <button class="demo-button primary" onclick="demoActions.switchPreset('minimal')">Minimal (5 buttons)</button>
+                        <button class="demo-button primary" onclick="demoActions.switchPreset('standard')">Standard (15+ buttons)</button>
+                        <button class="demo-button primary" onclick="demoActions.switchPreset('full')">Full (25+ buttons)</button>
+                        <button class="demo-button" onclick="demoActions.switchPreset(false)">No Toolbar</button>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                        Current preset: <strong id="current-preset">standard</strong>
+                    </p>
+                </div>
+
                 <div id="editor-container"></div>
 
                 <div class="demo-section">
@@ -333,14 +346,21 @@
                 <div class="info-panel">
                     <h4>✨ Core Features</h4>
                     <ul>
-                        <li>Rich text formatting (Bold, Italic, Underline, Strikethrough)</li>
-                        <li>Undo/Redo with keyboard shortcuts</li>
-                        <li>Event system for tracking changes</li>
-                        <li>Selection management and text manipulation</li>
-                        <li>Plugin architecture for extensibility</li>
-                        <li>Keyboard shortcuts support</li>
-                        <li>Accessible with ARIA attributes</li>
-                        <li>Mobile responsive design</li>
+                        <li><strong>Configurable Toolbar:</strong> 3 presets (minimal, standard, full) or custom configuration</li>
+                        <li><strong>Text Formatting:</strong> Bold, Italic, Underline, Strikethrough, Subscript, Superscript</li>
+                        <li><strong>Colors:</strong> Text color and background color pickers</li>
+                        <li><strong>Fonts:</strong> Font family and size selection</li>
+                        <li><strong>Headings:</strong> H1-H6 and paragraph styles</li>
+                        <li><strong>Lists:</strong> Bullet lists, numbered lists, indent/outdent</li>
+                        <li><strong>Alignment:</strong> Left, center, right, justify</li>
+                        <li><strong>Blocks:</strong> Blockquotes, inline code, code blocks, horizontal rules</li>
+                        <li><strong>Links & Images:</strong> Insert/remove links, insert images</li>
+                        <li><strong>Undo/Redo:</strong> Full history management with keyboard shortcuts</li>
+                        <li><strong>Clear Formatting:</strong> Remove all formatting from selected text</li>
+                        <li><strong>Plugin Architecture:</strong> Extensible design for custom functionality</li>
+                        <li><strong>Event System:</strong> Track changes, selections, and user interactions</li>
+                        <li><strong>Accessible:</strong> ARIA attributes and keyboard navigation</li>
+                        <li><strong>Mobile Responsive:</strong> Works on all devices</li>
                     </ul>
                 </div>
 
@@ -421,6 +441,39 @@
 
         // Demo actions
         window.demoActions = {
+            switchPreset(preset) {
+                // Save current content
+                const currentContent = editor.getContent();
+
+                // Destroy current editor
+                editor.destroy();
+
+                // Create new editor with new preset
+                const newEditor = new Editor({
+                    container: '#editor-container',
+                    placeholder: 'Start typing your content here...',
+                    content: currentContent,
+                    toolbar: preset
+                });
+
+                // Update global reference
+                window.editor = newEditor;
+
+                // Re-attach event listeners
+                newEditor.on('change', () => {
+                    updateStats();
+                });
+
+                // Update stats
+                updateStats();
+
+                // Update preset display
+                const presetName = preset === false ? 'none' : preset;
+                document.getElementById('current-preset').textContent = presetName;
+
+                updateOutput(`Switched to ${presetName} toolbar preset!`);
+            },
+
             getSample() {
                 const sampleContent = `
                     <h1>Sample Document</h1>
