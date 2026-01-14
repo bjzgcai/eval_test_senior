@@ -4,4 +4,6 @@
  */
 
 export { Editor } from './core/Editor';
-export type { EditorConfig } from './core/types';
+export { EventEmitter } from './core/EventEmitter';
+export type { EditorConfig, EditorEventType } from './core/types';
+export type { EventHandler } from './core/EventEmitter';

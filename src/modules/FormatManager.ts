@@ -4,12 +4,15 @@
  */
 
 import type { CommandType } from '../core/types';
+import type { EventEmitter } from '../core/EventEmitter';
 
 export class FormatManager {
   private editorElement: HTMLElement;
+  private eventEmitter?: EventEmitter;
 
-  constructor(editorElement: HTMLElement) {
+  constructor(editorElement: HTMLElement, eventEmitter?: EventEmitter) {
     this.editorElement = editorElement;
+    this.eventEmitter = eventEmitter;
   }
 
   /**
@@ -21,6 +24,11 @@ export class FormatManager {
 
     // Execute the document command
     document.execCommand(command, false);
+
+    // Emit format change event
+    if (this.eventEmitter) {
+      this.eventEmitter.emit('formatChange', { command });
+    }
   }
 
   /**

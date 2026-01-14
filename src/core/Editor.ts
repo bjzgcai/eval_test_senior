@@ -3,9 +3,10 @@
  * Handles the main editor initialization, DOM management, and content editing
  */
 
-import type { EditorConfig } from './types';
+import type { EditorConfig, EditorEventType } from './types';
 import { FormatManager } from '../modules/FormatManager';
 import { Toolbar } from '../modules/Toolbar';
+import { EventEmitter, EventHandler } from './EventEmitter';
 
 export class Editor {
   private container: HTMLElement;
@@ -14,6 +15,7 @@ export class Editor {
   private config: Required<EditorConfig>;
   private formatManager: FormatManager;
   private toolbar: Toolbar;
+  private eventEmitter: EventEmitter;
 
   constructor(config: EditorConfig) {
     // Validate and resolve container
@@ -31,17 +33,24 @@ export class Editor {
       readOnly: config.readOnly || false,
     };
 
+    // Initialize event emitter
+    this.eventEmitter = new EventEmitter();
+
     // Initialize editor
     this.editorElement = this.createEditorElement();
     this.wrapperElement = this.createWrapper();
 
     // Initialize modules
-    this.formatManager = new FormatManager(this.editorElement);
+    this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
     this.toolbar = new Toolbar(this);
 
     // Mount everything
     this.mount();
     this.initializeContent();
+    this.attachEventListeners();
+
+    // Emit mounted event
+    this.eventEmitter.emit('mounted');
   }
 
   /**
@@ -141,6 +150,50 @@ export class Editor {
   }
 
   /**
+   * Attach event listeners to the editor element
+   */
+  private attachEventListeners(): void {
+    // Content change events
+    this.editorElement.addEventListener('input', () => {
+      this.eventEmitter.emit('change', { content: this.getContent() });
+    });
+
+    // Focus events
+    this.editorElement.addEventListener('focus', () => {
+      this.eventEmitter.emit('focus');
+    });
+
+    this.editorElement.addEventListener('blur', () => {
+      this.eventEmitter.emit('blur');
+    });
+
+    // Selection change events
+    document.addEventListener('selectionchange', () => {
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+
+      // Only emit if selection is within this editor
+      if (range && this.editorElement.contains(range.commonAncestorContainer)) {
+        this.eventEmitter.emit('selectionChange', { selection, range });
+      }
+    });
+
+    // Keyboard events
+    this.editorElement.addEventListener('keydown', (e) => {
+      this.eventEmitter.emit('keydown', e);
+    });
+
+    this.editorElement.addEventListener('keyup', (e) => {
+      this.eventEmitter.emit('keyup', e);
+    });
+
+    // Paste events
+    this.editorElement.addEventListener('paste', (e) => {
+      this.eventEmitter.emit('paste', e);
+    });
+  }
+
+  /**
    * Get the current editor content
    */
   public getContent(): string {
@@ -165,7 +218,30 @@ export class Editor {
    * Destroy the editor instance
    */
   public destroy(): void {
+    this.eventEmitter.emit('destroyed');
+    this.eventEmitter.removeAllListeners();
     this.container.removeChild(this.wrapperElement);
+  }
+
+  /**
+   * Register an event handler
+   */
+  public on<T = any>(event: EditorEventType, handler: EventHandler<T>): void {
+    this.eventEmitter.on(event, handler);
+  }
+
+  /**
+   * Remove an event handler
+   */
+  public off<T = any>(event: EditorEventType, handler: EventHandler<T>): void {
+    this.eventEmitter.off(event, handler);
+  }
+
+  /**
+   * Register a one-time event handler
+   */
+  public once<T = any>(event: EditorEventType, handler: EventHandler<T>): void {
+    this.eventEmitter.once(event, handler);
   }
 
   /**
