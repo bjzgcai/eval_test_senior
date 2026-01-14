@@ -8,6 +8,7 @@ import { FormatManager } from '../modules/FormatManager';
 import { Toolbar } from '../modules/Toolbar';
 import { SelectionManager } from '../modules/SelectionManager';
 import { HistoryManager } from '../modules/HistoryManager';
+import { KeyboardManager } from '../modules/KeyboardManager';
 import { EventEmitter, EventHandler } from './EventEmitter';
 
 export class Editor {
@@ -19,6 +20,7 @@ export class Editor {
   private toolbar: Toolbar;
   private selectionManager: SelectionManager;
   private historyManager: HistoryManager;
+  private keyboardManager: KeyboardManager;
   private eventEmitter: EventEmitter;
 
   constructor(config: EditorConfig) {
@@ -47,6 +49,7 @@ export class Editor {
     // Initialize modules
     this.selectionManager = new SelectionManager(this.editorElement);
     this.historyManager = new HistoryManager(this.editorElement);
+    this.keyboardManager = new KeyboardManager(this, this.editorElement);
     this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
     this.toolbar = new Toolbar(this);
 
@@ -382,5 +385,12 @@ export class Editor {
    */
   public getHistoryManager(): HistoryManager {
     return this.historyManager;
+  }
+
+  /**
+   * Get the keyboard manager
+   */
+  public getKeyboardManager(): KeyboardManager {
+    return this.keyboardManager;
   }
 }
