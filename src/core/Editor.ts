@@ -5,12 +5,15 @@
 
 import type { EditorConfig } from './types';
 import { FormatManager } from '../modules/FormatManager';
+import { Toolbar } from '../modules/Toolbar';
 
 export class Editor {
   private container: HTMLElement;
+  private wrapperElement: HTMLDivElement;
   private editorElement: HTMLDivElement;
   private config: Required<EditorConfig>;
   private formatManager: FormatManager;
+  private toolbar: Toolbar;
 
   constructor(config: EditorConfig) {
     // Validate and resolve container
@@ -30,11 +33,15 @@ export class Editor {
 
     // Initialize editor
     this.editorElement = this.createEditorElement();
-    this.mount();
-    this.initializeContent();
+    this.wrapperElement = this.createWrapper();
 
     // Initialize modules
     this.formatManager = new FormatManager(this.editorElement);
+    this.toolbar = new Toolbar(this);
+
+    // Mount everything
+    this.mount();
+    this.initializeContent();
   }
 
   /**
@@ -45,6 +52,20 @@ export class Editor {
       return document.querySelector(container);
     }
     return container;
+  }
+
+  /**
+   * Create wrapper element to hold toolbar and editor
+   */
+  private createWrapper(): HTMLDivElement {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'rte-wrapper';
+    Object.assign(wrapper.style, {
+      border: '1px solid #d0d7de',
+      borderRadius: '6px',
+      overflow: 'hidden',
+    });
+    return wrapper;
   }
 
   /**
@@ -74,12 +95,14 @@ export class Editor {
     Object.assign(editor.style, {
       minHeight: '200px',
       padding: '12px',
-      border: '1px solid #d0d7de',
-      borderRadius: '6px',
+      border: 'none',
+      borderTop: '1px solid #d0d7de',
+      borderRadius: '0 0 6px 6px',
       outline: 'none',
       fontSize: '14px',
       lineHeight: '1.6',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      backgroundColor: '#fff',
     });
 
     // Add placeholder styles via CSS
@@ -102,7 +125,10 @@ export class Editor {
    * Mount the editor to the container
    */
   private mount(): void {
-    this.container.appendChild(this.editorElement);
+    // Assemble the editor
+    this.wrapperElement.appendChild(this.toolbar.getElement());
+    this.wrapperElement.appendChild(this.editorElement);
+    this.container.appendChild(this.wrapperElement);
   }
 
   /**
@@ -139,7 +165,7 @@ export class Editor {
    * Destroy the editor instance
    */
   public destroy(): void {
-    this.container.removeChild(this.editorElement);
+    this.container.removeChild(this.wrapperElement);
   }
 
   /**
@@ -168,5 +194,19 @@ export class Editor {
    */
   public isItalic(): boolean {
     return this.formatManager.isItalic();
+  }
+
+  /**
+   * Apply underline formatting to selected text
+   */
+  public underline(): void {
+    this.formatManager.toggleUnderline();
+  }
+
+  /**
+   * Check if underline formatting is active
+   */
+  public isUnderline(): boolean {
+    return this.formatManager.isUnderline();
   }
 }

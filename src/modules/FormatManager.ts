@@ -71,4 +71,25 @@ export class FormatManager {
   public isItalic(): boolean {
     return this.isFormatActive('italic');
   }
+
+  /**
+   * Apply underline formatting to selected text
+   */
+  public underline(): void {
+    this.executeCommand('underline');
+  }
+
+  /**
+   * Toggle underline formatting
+   */
+  public toggleUnderline(): void {
+    this.underline();
+  }
+
+  /**
+   * Check if underline is active
+   */
+  public isUnderline(): boolean {
+    return this.isFormatActive('underline');
+  }
 }
