@@ -9,7 +9,10 @@ import { Toolbar } from '../modules/Toolbar';
 import { SelectionManager } from '../modules/SelectionManager';
 import { HistoryManager } from '../modules/HistoryManager';
 import { KeyboardManager } from '../modules/KeyboardManager';
+import { PluginManager } from './PluginManager';
+import { ConfigValidator } from './ConfigValidator';
 import { EventEmitter, EventHandler } from './EventEmitter';
+import type { Plugin } from './Plugin';
 
 export class Editor {
   private container: HTMLElement;
@@ -21,11 +24,16 @@ export class Editor {
   private selectionManager: SelectionManager;
   private historyManager: HistoryManager;
   private keyboardManager: KeyboardManager;
+  private pluginManager: PluginManager;
   private eventEmitter: EventEmitter;
 
   constructor(config: EditorConfig) {
-    // Validate and resolve container
-    const container = this.resolveContainer(config.container);
+    // Validate configuration
+    ConfigValidator.validate(config);
+    const sanitizedConfig = ConfigValidator.sanitize(config);
+
+    // Resolve container
+    const container = this.resolveContainer(sanitizedConfig.container);
     if (!container) {
       throw new Error('Invalid container: Element not found');
     }
@@ -33,10 +41,10 @@ export class Editor {
 
     // Set default configuration
     this.config = {
-      container: config.container,
-      content: config.content || '',
-      placeholder: config.placeholder || 'Start typing...',
-      readOnly: config.readOnly || false,
+      container: sanitizedConfig.container,
+      content: sanitizedConfig.content || '',
+      placeholder: sanitizedConfig.placeholder || 'Start typing...',
+      readOnly: sanitizedConfig.readOnly || false,
     };
 
     // Initialize event emitter
@@ -50,6 +58,7 @@ export class Editor {
     this.selectionManager = new SelectionManager(this.editorElement);
     this.historyManager = new HistoryManager(this.editorElement);
     this.keyboardManager = new KeyboardManager(this, this.editorElement);
+    this.pluginManager = new PluginManager(this);
     this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
     this.toolbar = new Toolbar(this);
 
@@ -228,6 +237,7 @@ export class Editor {
    * Destroy the editor instance
    */
   public destroy(): void {
+    this.pluginManager.destroyAll();
     this.eventEmitter.emit('destroyed');
     this.eventEmitter.removeAllListeners();
     this.container.removeChild(this.wrapperElement);
@@ -392,5 +402,26 @@ export class Editor {
    */
   public getKeyboardManager(): KeyboardManager {
     return this.keyboardManager;
+  }
+
+  /**
+   * Register a plugin
+   */
+  public registerPlugin(plugin: Plugin): void {
+    this.pluginManager.register(plugin);
+  }
+
+  /**
+   * Unregister a plugin
+   */
+  public unregisterPlugin(pluginName: string): void {
+    this.pluginManager.unregister(pluginName);
+  }
+
+  /**
+   * Get the plugin manager
+   */
+  public getPluginManager(): PluginManager {
+    return this.pluginManager;
   }
 }
