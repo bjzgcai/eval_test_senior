@@ -50,4 +50,25 @@ export class FormatManager {
   public isBold(): boolean {
     return this.isFormatActive('bold');
   }
+
+  /**
+   * Apply italic formatting to selected text
+   */
+  public italic(): void {
+    this.executeCommand('italic');
+  }
+
+  /**
+   * Toggle italic formatting
+   */
+  public toggleItalic(): void {
+    this.italic();
+  }
+
+  /**
+   * Check if italic is active
+   */
+  public isItalic(): boolean {
+    return this.isFormatActive('italic');
+  }
 }

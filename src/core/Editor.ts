@@ -155,4 +155,18 @@ export class Editor {
   public isBold(): boolean {
     return this.formatManager.isBold();
   }
+
+  /**
+   * Apply italic formatting to selected text
+   */
+  public italic(): void {
+    this.formatManager.toggleItalic();
+  }
+
+  /**
+   * Check if italic formatting is active
+   */
+  public isItalic(): boolean {
+    return this.formatManager.isItalic();
+  }
 }
