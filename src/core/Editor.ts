@@ -6,6 +6,7 @@
 import type { EditorConfig, EditorEventType } from './types';
 import { FormatManager } from '../modules/FormatManager';
 import { Toolbar } from '../modules/Toolbar';
+import { SelectionManager } from '../modules/SelectionManager';
 import { EventEmitter, EventHandler } from './EventEmitter';
 
 export class Editor {
@@ -15,6 +16,7 @@ export class Editor {
   private config: Required<EditorConfig>;
   private formatManager: FormatManager;
   private toolbar: Toolbar;
+  private selectionManager: SelectionManager;
   private eventEmitter: EventEmitter;
 
   constructor(config: EditorConfig) {
@@ -41,6 +43,7 @@ export class Editor {
     this.wrapperElement = this.createWrapper();
 
     // Initialize modules
+    this.selectionManager = new SelectionManager(this.editorElement);
     this.formatManager = new FormatManager(this.editorElement, this.eventEmitter);
     this.toolbar = new Toolbar(this);
 
@@ -298,5 +301,47 @@ export class Editor {
    */
   public isStrikethrough(): boolean {
     return this.formatManager.isStrikethrough();
+  }
+
+  /**
+   * Get the selection manager
+   */
+  public getSelectionManager(): SelectionManager {
+    return this.selectionManager;
+  }
+
+  /**
+   * Get the current selection
+   */
+  public getSelection(): Selection | null {
+    return this.selectionManager.getSelection();
+  }
+
+  /**
+   * Get the current range
+   */
+  public getRange(): Range | null {
+    return this.selectionManager.getRange();
+  }
+
+  /**
+   * Get the selected text
+   */
+  public getSelectedText(): string {
+    return this.selectionManager.getSelectedText();
+  }
+
+  /**
+   * Insert text at cursor position
+   */
+  public insertText(text: string): void {
+    this.selectionManager.insertText(text);
+  }
+
+  /**
+   * Insert HTML at cursor position
+   */
+  public insertHTML(html: string): void {
+    this.selectionManager.insertHTML(html);
   }
 }
