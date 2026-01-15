@@ -26,3 +26,6 @@ coverage/
 *.log
 .env
 .env.local
+
+# Claude Code configuration (private)
+.claude/
